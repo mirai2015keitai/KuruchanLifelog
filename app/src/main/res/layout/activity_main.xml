@@ -1,0 +1,139 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:stretchColumns="0,1">
+
+        <TableRow>
+
+            <TextView
+                android:layout_weight="2"
+                android:gravity="center"
+                android:text="時間" />
+        </TableRow>
+
+        <TableRow>
+
+            <DigitalClock
+                android:id="@+id/nowtime"
+                android:layout_margin="15dp"
+                android:layout_weight="2"
+                android:autoText="false"
+                android:gravity="center"
+                android:textSize="45dp" />
+        </TableRow>
+
+        <TableRow>
+
+            <TextView android:text="距離" />
+
+            <TextView android:text="経過時間" />
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:id="@+id/distance"
+                android:layout_margin="15dp" />
+
+            <Chronometer
+                android:id="@+id/chronometer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:format="%s"
+                android:textSize="45dp"
+                android:textColor="#999999" />
+        </TableRow>
+
+        <TableRow>
+
+            <Button
+                android:id="@+id/startbt"
+                android:layout_weight="2"
+                android:text="スタート" />
+        </TableRow>
+
+        <TableRow>
+
+            <Button
+                android:id="@+id/stopbt"
+                android:layout_weight="2"
+                android:text="ストップ" />
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:text="X軸"
+                android:textSize="25dp" />
+
+            <TextView
+                android:id="@+id/aX"
+                android:textSize="25dp" />
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:text="Y軸"
+                android:textSize="25dp" />
+
+            <TextView
+                android:id="@+id/aY"
+                android:textSize="25dp" />
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:text="Z軸"
+                android:textSize="25dp" />
+
+            <TextView
+                android:id="@+id/aZ"
+                android:textSize="25dp" />
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:text="合成"
+                android:textSize="25dp" />
+
+            <TextView
+                android:id="@+id/sum"
+                android:textSize="25dp" />
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:text="highdump"
+                android:textSize="25dp" />
+
+            <TextView
+                android:id="@+id/highdump"
+                android:textSize="25dp" />
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:text="nodump"
+                android:textSize="25dp" />
+
+            <TextView
+                android:id="@+id/nodump"
+                android:textSize="25dp" />
+        </TableRow>
+
+
+    </TableLayout>
+
+</LinearLayout>
