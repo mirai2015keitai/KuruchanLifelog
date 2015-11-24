@@ -190,7 +190,7 @@ public class MainActivity extends Activity {
                 @Override
                 public void run() {
                     //閾値判定を入れる
-                    if (acZ > 12 || acZ< 8) {
+                    if (acZ > 10.9 || acZ< 8.9) {
                         highDump++;
                         highdump.setText("" + highDump);
 
