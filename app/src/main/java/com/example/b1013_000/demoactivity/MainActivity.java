@@ -1,6 +1,8 @@
 package com.example.b1013_000.demoactivity;
 
+import android.Manifest;
 import android.app.Activity;
+import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -12,6 +14,7 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -60,10 +63,13 @@ public class MainActivity extends Activity {
     private double st_lat = 0, st_lng = 0;
     private double en_lat = 0, en_lng = 0;
 
-
     //カウンターのための変数
     private int noDump = 0;
     private int highDump = 0;
+
+    //フラグ変数
+    private boolean startFlag;
+    private boolean pauseFlag;
 
     //距離測定のための変数
     private float[] results = new float[3];
@@ -77,10 +83,10 @@ public class MainActivity extends Activity {
                 acX = event.values[0];
                 acY = event.values[1];
                 acZ = event.values[2];
-                aX.setText(String.valueOf(event.values[0]));
-                aY.setText(String.valueOf(event.values[1]));
-                aZ.setText(String.valueOf(event.values[2]));
-                sum.setText(String.valueOf(event.values[0] + event.values[1] + event.values[2]));
+//                aX.setText(String.valueOf(event.values[0]));
+//                aY.setText(String.valueOf(event.values[1]));
+//                aZ.setText(String.valueOf(event.values[2]));
+//                sum.setText(String.valueOf(event.values[0] + event.values[1] + event.values[2]));
             }
         }
 
@@ -112,25 +118,52 @@ public class MainActivity extends Activity {
 
         }
     };
+
     View.OnClickListener CListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            switch (v.getId()){
+            switch (v.getId()) {
                 case R.id.startbt:
-                    mTimer1 = new Timer(true);
-                    mTimer2 = new Timer(true);
-                    mTimer3 = new Timer(true);
-                    mTimerTask1 = new MTimerTask1();
-                    mTimerTask2 = new MTimerTask2();
-                    mTimerTask3 = new MTimerTask3();
-                    mTimer1.schedule(mTimerTask1, 1000, 50);
-                    mTimer2.schedule(mTimerTask2, 1000, 5000);
-                    mTimer3.schedule(mTimerTask3, 1000, 5000);
-                    mChronometer.setBase(SystemClock.elapsedRealtime());
-                    mChronometer.start();
-                    break;
+                    // 1回目の開始処理
+                    if(!startFlag && !pauseFlag) {
+                        mTimer1 = new Timer(true);
+                        mTimer2 = new Timer(true);
+                        mTimerTask1 = new MTimerTask1();
+                        mTimerTask2 = new MTimerTask2();
+                        mTimer1.schedule(mTimerTask1, 1000, 50);
+                        mTimer2.schedule(mTimerTask2, 1000, 5000);
+                        ((Chronometer) findViewById(R.id.chronometer)).setBase(SystemClock.elapsedRealtime());
+                        ((Chronometer) findViewById(R.id.chronometer)).start();
+                        startFlag = true;
+                        pauseFlag = true;
+                        break;
+                    }
+                    // ポーズ時処理
+                    if(startFlag && pauseFlag) {
+                        ((Chronometer)findViewById(R.id.chronometer)).stop();
+                        pauseFlag = false;
+                        break;
+                    }
+                    // 2回目以降の開始処理
+                    else {
+                        int stoppedMilliseconds = 0;
+                        String chronoText = mChronometer.getText().toString();
+                        String array[] = chronoText.split(":");
+                        if (array.length == 2) {
+                            stoppedMilliseconds = Integer.parseInt(array[0]) * 60 * 1000
+                                + Integer.parseInt(array[1]) * 1000;
+                        } else if (array.length == 3) {
+                            stoppedMilliseconds = Integer.parseInt(array[0]) * 60 * 60 * 1000
+                                + Integer.parseInt(array[1]) * 60 * 1000
+                                + Integer.parseInt(array[2]) * 1000;
+                        }
+                            mChronometer.setBase(SystemClock.elapsedRealtime() - stoppedMilliseconds);
+                            mChronometer.start();
+                            startFlag = true;
+                            pauseFlag = true;
+                    }
                 case R.id.stopbt:
-                    if(mTimer2 != null){
+                    if (mTimer2 != null) {
                         mTimer1.cancel();
                         mTimer2.cancel();
                         mTimer3.cancel();
@@ -161,28 +194,35 @@ public class MainActivity extends Activity {
         mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         startBt = (Button) findViewById(R.id.startbt);
         stopBt = (Button) findViewById(R.id.stopbt);
-        aX = (TextView) findViewById(R.id.aX);
-        aY = (TextView) findViewById(R.id.aY);
-        aZ = (TextView) findViewById(R.id.aZ);
-        sum = (TextView) findViewById(R.id.sum);
-        highdump = (TextView) findViewById(R.id.highdump);
-        nodump = (TextView) findViewById(R.id.nodump);
-        dis = (TextView) findViewById(R.id.distance);
-
+//        aX = (TextView) findViewById(R.id.aX);
+//        aY = (TextView) findViewById(R.id.aY);
+//        aZ = (TextView) findViewById(R.id.aZ);
+//        sum = (TextView) findViewById(R.id.sum);
+//        highdump = (TextView) findViewById(R.id.highdump);
+//        nodump = (TextView) findViewById(R.id.nodump);
 
         startBt.setOnClickListener(CListener);
         stopBt.setOnClickListener(CListener);
-
 
         Criteria criteria = new Criteria();
         criteria.setAccuracy(Criteria.ACCURACY_COARSE);
         criteria.setPowerRequirement(Criteria.POWER_LOW);
         String provider = mLocationManager.getBestProvider(criteria, true);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
         mLocationManager.requestLocationUpdates(provider, 0, 0, LListener);
 
         mChronometer = (Chronometer) findViewById(R.id.chronometer);
-        mChronometer.stop();
-
+        startFlag = false;
+        pauseFlag = false;
     }
 
     @Override
@@ -204,11 +244,11 @@ public class MainActivity extends Activity {
                     //閾値判定を入れる
                     if (acZ > 10.9 || acZ< 8.9) {
                         highDump++;
-                        highdump.setText("" + highDump);
+//                        highdump.setText("" + highDump);
 
                     } else {
                         noDump++;
-                        nodump.setText("" + noDump);
+//                        nodump.setText("" + noDump);
                     }
 //                    System.out.println("highDump = " + highDump);
 //                    System.out.println("noDump = " + noDump);
