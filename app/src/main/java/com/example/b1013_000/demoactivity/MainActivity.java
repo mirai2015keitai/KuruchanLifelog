@@ -3,6 +3,7 @@ package com.example.b1013_000.demoactivity;
 import android.Manifest;
 import android.app.Activity;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -136,12 +137,16 @@ public class MainActivity extends Activity {
                         ((Chronometer) findViewById(R.id.chronometer)).start();
                         startFlag = true;
                         pauseFlag = true;
+                        startBt.setBackgroundColor(Color.rgb(255, 215, 0));
+                        startBt.setText("一時停止する");
                         break;
                     }
                     // ポーズ時処理
                     if(startFlag && pauseFlag) {
                         ((Chronometer)findViewById(R.id.chronometer)).stop();
                         pauseFlag = false;
+                        startBt.setBackgroundColor(Color.rgb(144, 238, 144));
+                        startBt.setText("計測を再開する");
                         break;
                     }
                     // 2回目以降の開始処理
@@ -157,10 +162,12 @@ public class MainActivity extends Activity {
                                 + Integer.parseInt(array[1]) * 60 * 1000
                                 + Integer.parseInt(array[2]) * 1000;
                         }
-                            mChronometer.setBase(SystemClock.elapsedRealtime() - stoppedMilliseconds);
-                            mChronometer.start();
-                            startFlag = true;
-                            pauseFlag = true;
+                        mChronometer.setBase(SystemClock.elapsedRealtime() - stoppedMilliseconds);
+                        mChronometer.start();
+                        startBt.setBackgroundColor(Color.rgb(255, 215, 0));
+                        startBt.setText("一時停止する");
+                        startFlag = true;
+                        pauseFlag = true;
                     }
                 case R.id.stopbt:
                     if (mTimer2 != null) {
