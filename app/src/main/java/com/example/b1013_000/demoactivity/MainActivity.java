@@ -35,7 +35,7 @@ public class MainActivity extends Activity {
 
     //レイアウトのための変数
     private TextView nowTime;
-    private TextView distance;
+    private TextView dis;
     private TextView time;
     private Button startBt;
     private Button stopBt;
@@ -47,10 +47,13 @@ public class MainActivity extends Activity {
     //タイマーのための変数
     private Timer mTimer1 = null;
     private Timer mTimer2 = null;
+    private Timer mTimer3 = null;
     private TimerTask mTimerTask1; //情報収取のためのタイマー
     private TimerTask mTimerTask2; //サーバ送信のためのタイマー
+    private TimerTask mTimerTask3; //距離測定のためのタイマー
     private Handler mHandler1 = new Handler();
     private Handler mHandler2 = new Handler();
+    private Handler mHandler3 = new Handler();
 
     //位置情報のための変数
     private LocationManager mLocationManager;
@@ -61,6 +64,10 @@ public class MainActivity extends Activity {
     //カウンターのための変数
     private int noDump = 0;
     private int highDump = 0;
+
+    //距離測定のための変数
+    private float[] results = new float[3];
+    private float distance = 0;
 
     //リスナー
     SensorEventListener SListner = new SensorEventListener() {
@@ -85,10 +92,9 @@ public class MainActivity extends Activity {
     LocationListener LListener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
+
             en_lat = location.getLatitude();
             en_lng = location.getLongitude();
-//            System.out.println("lat = " + en_lat);
-//            System.out.println("lng = " + en_lng);
         }
 
         @Override
@@ -113,10 +119,13 @@ public class MainActivity extends Activity {
                 case R.id.startbt:
                     mTimer1 = new Timer(true);
                     mTimer2 = new Timer(true);
+                    mTimer3 = new Timer(true);
                     mTimerTask1 = new MTimerTask1();
                     mTimerTask2 = new MTimerTask2();
+                    mTimerTask3 = new MTimerTask3();
                     mTimer1.schedule(mTimerTask1, 1000, 50);
                     mTimer2.schedule(mTimerTask2, 1000, 5000);
+                    mTimer3.schedule(mTimerTask3, 1000, 5000);
                     mChronometer.setBase(SystemClock.elapsedRealtime());
                     mChronometer.start();
                     break;
@@ -124,11 +133,14 @@ public class MainActivity extends Activity {
                     if(mTimer2 != null){
                         mTimer1.cancel();
                         mTimer2.cancel();
+                        mTimer3.cancel();
                         mTimer1 = null;
                         mTimer2 = null;
+                        mTimer3 = null;
                         mChronometer.stop();
                         highDump = 0;
                         noDump = 0;
+                        distance = 0;
                     }
                     break;
                 default:
@@ -155,6 +167,7 @@ public class MainActivity extends Activity {
         sum = (TextView) findViewById(R.id.sum);
         highdump = (TextView) findViewById(R.id.highdump);
         nodump = (TextView) findViewById(R.id.nodump);
+        dis = (TextView) findViewById(R.id.distance);
 
 
         startBt.setOnClickListener(CListener);
@@ -169,7 +182,6 @@ public class MainActivity extends Activity {
 
         mChronometer = (Chronometer) findViewById(R.id.chronometer);
         mChronometer.stop();
-
 
     }
 
@@ -198,8 +210,8 @@ public class MainActivity extends Activity {
                         noDump++;
                         nodump.setText("" + noDump);
                     }
-                    System.out.println("highDump = " + highDump);
-                    System.out.println("noDump = " + noDump);
+//                    System.out.println("highDump = " + highDump);
+//                    System.out.println("noDump = " + noDump);
 
                 }
             });
@@ -218,6 +230,27 @@ public class MainActivity extends Activity {
                     noDump = 0;
                     st_lat = en_lat;
                     st_lng = en_lng;
+                }
+            });
+        }
+    }
+
+    private class MTimerTask3 extends TimerTask{
+        @Override
+        public void run() {
+            mHandler3.post(new Runnable() {
+                @Override
+                public void run() {
+                    if(st_lat != 0 && st_lng !=0){
+                        System.out.println(st_lat);
+                        System.out.println(st_lng);
+                        System.out.println(en_lat);
+                        System.out.println(en_lng);
+                        Location.distanceBetween(st_lat, st_lng, en_lat, en_lng, results);
+                        distance += results[0];
+                        System.out.println("距離:" + distance);
+                        dis.setText(distance + "m");
+                    }
                 }
             });
         }
