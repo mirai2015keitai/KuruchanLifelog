@@ -118,7 +118,6 @@ public class MainActivity extends Activity {
 
         }
     };
-
     View.OnClickListener CListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -128,8 +127,10 @@ public class MainActivity extends Activity {
                     if(!startFlag && !pauseFlag) {
                         mTimer1 = new Timer(true);
                         mTimer2 = new Timer(true);
+                        mTimer3 = new Timer(true);
                         mTimerTask1 = new MTimerTask1();
                         mTimerTask2 = new MTimerTask2();
+                        mTimerTask3 = new MTimerTask2();
                         mTimer1.schedule(mTimerTask1, 1000, 50);
                         mTimer2.schedule(mTimerTask2, 1000, 5000);
                         ((Chronometer) findViewById(R.id.chronometer)).setBase(SystemClock.elapsedRealtime());
