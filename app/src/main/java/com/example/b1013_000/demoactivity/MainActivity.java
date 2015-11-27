@@ -171,6 +171,7 @@ public class MainActivity extends Activity {
                         mTimer2 = null;
                         mTimer3 = null;
                         mChronometer.stop();
+
                         highDump = 0;
                         noDump = 0;
                         distance = 0;
