@@ -38,9 +38,8 @@ import java.util.TimerTask;
 public class MainActivity extends Activity {
 
     //レイアウトのための変数
-    private TextView nowTime;
+    private TextView cal;
     private TextView dis;
-    private TextView time;
     private Button startBt;
     private Button stopBt;
 
@@ -75,6 +74,12 @@ public class MainActivity extends Activity {
     //距離測定のための変数
     private float[] results = new float[3];
     private float distance = 0;
+    private double st_lat2 = 0, st_lng2 = 0;
+    private double en_lat2 = 0, en_lng2 = 0;
+
+    //カロリー測定のための変数
+    private double calorie = 0;
+
 
     //リスナー
     SensorEventListener SListner = new SensorEventListener() {
@@ -84,10 +89,6 @@ public class MainActivity extends Activity {
                 acX = event.values[0];
                 acY = event.values[1];
                 acZ = event.values[2];
-//                aX.setText(String.valueOf(event.values[0]));
-//                aY.setText(String.valueOf(event.values[1]));
-//                aZ.setText(String.valueOf(event.values[2]));
-//                sum.setText(String.valueOf(event.values[0] + event.values[1] + event.values[2]));
             }
         }
 
@@ -99,9 +100,10 @@ public class MainActivity extends Activity {
     LocationListener LListener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
-
             en_lat = location.getLatitude();
             en_lng = location.getLongitude();
+            en_lat2 = location.getLatitude();
+            en_lng2 = location.getLongitude();
         }
 
         @Override
@@ -131,9 +133,10 @@ public class MainActivity extends Activity {
                         mTimer3 = new Timer(true);
                         mTimerTask1 = new MTimerTask1();
                         mTimerTask2 = new MTimerTask2();
-                        mTimerTask3 = new MTimerTask2();
+                        mTimerTask3 = new MTimerTask3();
                         mTimer1.schedule(mTimerTask1, 1000, 50);
                         mTimer2.schedule(mTimerTask2, 1000, 5000);
+                        mTimer3.schedule(mTimerTask3, 1000, 1000);
                         ((Chronometer) findViewById(R.id.chronometer)).setBase(SystemClock.elapsedRealtime());
                         ((Chronometer) findViewById(R.id.chronometer)).start();
                         startFlag = true;
@@ -184,10 +187,13 @@ public class MainActivity extends Activity {
                         highDump = 0;
                         noDump = 0;
                         distance = 0;
+                        calorie = 0;
                         pauseFlag = false;
                         startFlag = false;
                         startBt.setBackgroundColor(Color.rgb(121, 192, 110));
                         startBt.setText("計測を開始する");
+                        dis.setText("0.0");
+                        cal.setText("0");
                         break;
                     }
                     break;
@@ -204,18 +210,12 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         startBt = (Button) findViewById(R.id.startbt);
         stopBt = (Button) findViewById(R.id.stopbt);
-//        aX = (TextView) findViewById(R.id.aX);
-//        aY = (TextView) findViewById(R.id.aY);
-//        aZ = (TextView) findViewById(R.id.aZ);
-//        sum = (TextView) findViewById(R.id.sum);
-//        highdump = (TextView) findViewById(R.id.highdump);
-//        nodump = (TextView) findViewById(R.id.nodump);
-
+        dis = (TextView) findViewById(R.id.dis);
+        cal = (TextView) findViewById(R.id.cal);
         startBt.setOnClickListener(CListener);
         stopBt.setOnClickListener(CListener);
 
@@ -259,15 +259,9 @@ public class MainActivity extends Activity {
                     //閾値判定を入れる
                     if (acZ > 10.9 || acZ< 8.9) {
                         highDump++;
-//                        highdump.setText("" + highDump);
-
                     } else {
                         noDump++;
-//                        nodump.setText("" + noDump);
                     }
-//                    System.out.println("highDump = " + highDump);
-//                    System.out.println("noDump = " + noDump);
-
                 }
             });
         }
@@ -290,6 +284,7 @@ public class MainActivity extends Activity {
         }
     }
 
+    //距離計測とカロリー測定のためのタイマータスク
     private class MTimerTask3 extends TimerTask{
         @Override
         public void run() {
@@ -297,20 +292,22 @@ public class MainActivity extends Activity {
                 @Override
                 public void run() {
                     if(st_lat != 0 && st_lng !=0){
-                        System.out.println(st_lat);
-                        System.out.println(st_lng);
-                        System.out.println(en_lat);
-                        System.out.println(en_lng);
-                        Location.distanceBetween(st_lat, st_lng, en_lat, en_lng, results);
+                        Location.distanceBetween(st_lat2, st_lng2, en_lat2, en_lng2, results);
+                        //距離測定
                         distance += results[0];
-                        System.out.println("距離:" + distance);
-                        dis.setText(distance + "m");
+                        dis.setText(""+getEfficientDigit(distance,2));
+                        //カロリー測定
+                        calorie = (distance / 1000) * 52.5;
+                        cal.setText("" + getEfficientDigit(calorie,2));
                     }
+                    st_lat2 = en_lat2;
+                    st_lng2 = en_lng2;
                 }
             });
         }
     }
 
+    //サーバ送信のためのメソッド
     private void volleyPost(final double st_lat, final double st_lng, final double en_lat, final double en_lng, final int noDump, final int highDump){
         RequestQueue mQueue = Volley.newRequestQueue(getApplicationContext());
         String url = "http://mirai2015kuru.ddns.net/json_in.php";
@@ -342,6 +339,14 @@ public class MainActivity extends Activity {
             }
         };
         mQueue.add(postRequest);
+    }
+
+    //有効桁数の計算のためのメソッド
+    private double getEfficientDigit( double value, int effectiveDigit ) {
+        int valueDigit = (int)Math.rint( Math.log10( Math.abs(value) ) );
+        int roundDigit = valueDigit - effectiveDigit + 1;
+        double v = Math.floor( value / Math.pow( 10, roundDigit ) + 0.5 );
+        return v * Math.pow( 10, roundDigit );
     }
 
 }
