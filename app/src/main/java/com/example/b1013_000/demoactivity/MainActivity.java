@@ -3,6 +3,7 @@ package com.example.b1013_000.demoactivity;
 import android.Manifest;
 import android.app.Activity;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -118,7 +119,6 @@ public class MainActivity extends Activity {
 
         }
     };
-
     View.OnClickListener CListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -128,20 +128,26 @@ public class MainActivity extends Activity {
                     if(!startFlag && !pauseFlag) {
                         mTimer1 = new Timer(true);
                         mTimer2 = new Timer(true);
+                        mTimer3 = new Timer(true);
                         mTimerTask1 = new MTimerTask1();
                         mTimerTask2 = new MTimerTask2();
+                        mTimerTask3 = new MTimerTask2();
                         mTimer1.schedule(mTimerTask1, 1000, 50);
                         mTimer2.schedule(mTimerTask2, 1000, 5000);
                         ((Chronometer) findViewById(R.id.chronometer)).setBase(SystemClock.elapsedRealtime());
                         ((Chronometer) findViewById(R.id.chronometer)).start();
                         startFlag = true;
                         pauseFlag = true;
+                        startBt.setBackgroundColor(Color.rgb(253, 211, 92));
+                        startBt.setText("一時停止する");
                         break;
                     }
                     // ポーズ時処理
                     if(startFlag && pauseFlag) {
                         ((Chronometer)findViewById(R.id.chronometer)).stop();
                         pauseFlag = false;
+                        startBt.setBackgroundColor(Color.rgb(121, 192, 110));
+                        startBt.setText("計測を再開する");
                         break;
                     }
                     // 2回目以降の開始処理
@@ -157,10 +163,13 @@ public class MainActivity extends Activity {
                                 + Integer.parseInt(array[1]) * 60 * 1000
                                 + Integer.parseInt(array[2]) * 1000;
                         }
-                            mChronometer.setBase(SystemClock.elapsedRealtime() - stoppedMilliseconds);
-                            mChronometer.start();
-                            startFlag = true;
-                            pauseFlag = true;
+                        mChronometer.setBase(SystemClock.elapsedRealtime() - stoppedMilliseconds);
+                        mChronometer.start();
+                        startBt.setBackgroundColor(Color.rgb(253, 211, 92));
+                        startBt.setText("一時停止する");
+                        startFlag = true;
+                        pauseFlag = true;
+                        break;
                     }
                 case R.id.stopbt:
                     if (mTimer2 != null) {
@@ -171,10 +180,15 @@ public class MainActivity extends Activity {
                         mTimer2 = null;
                         mTimer3 = null;
                         mChronometer.stop();
-
+                        mChronometer.setBase(android.os.SystemClock.elapsedRealtime());
                         highDump = 0;
                         noDump = 0;
                         distance = 0;
+                        pauseFlag = false;
+                        startFlag = false;
+                        startBt.setBackgroundColor(Color.rgb(121, 192, 110));
+                        startBt.setText("計測を開始する");
+                        break;
                     }
                     break;
                 default:
