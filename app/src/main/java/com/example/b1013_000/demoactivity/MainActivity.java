@@ -30,6 +30,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
@@ -295,10 +296,14 @@ public class MainActivity extends Activity {
                         Location.distanceBetween(st_lat2, st_lng2, en_lat2, en_lng2, results);
                         //距離測定
                         distance += results[0];
-                        dis.setText(""+getEfficientDigit(distance,2));
+                        BigDecimal bigd = getRounding(distance);
+                        float k = bigd.floatValue();
+                        dis.setText("" + k);
                         //カロリー測定
-                        calorie = (distance / 1000) * 52.5;
-                        cal.setText("" + getEfficientDigit(calorie,2));
+                        calorie = (k / 1000) * 52.5;
+                        cal.setText("" + getRounding(calorie));
+
+
                     }
                     st_lat2 = en_lat2;
                     st_lng2 = en_lng2;
@@ -341,12 +346,19 @@ public class MainActivity extends Activity {
         mQueue.add(postRequest);
     }
 
-    //有効桁数の計算のためのメソッド
-    private double getEfficientDigit( double value, int effectiveDigit ) {
-        int valueDigit = (int)Math.rint( Math.log10( Math.abs(value) ) );
-        int roundDigit = valueDigit - effectiveDigit + 1;
-        double v = Math.floor( value / Math.pow( 10, roundDigit ) + 0.5 );
-        return v * Math.pow( 10, roundDigit );
+    // 有効数字＆四捨五入用関数
+    private BigDecimal getRounding(double value){
+        BigDecimal x = new BigDecimal(value);
+        x = x.setScale(1, BigDecimal.ROUND_HALF_UP);
+        return x;
     }
+//
+//    //有効桁数の計算のためのメソッド
+//    private double getEfficientDigit( double value, int effectiveDigit ) {
+//        int valueDigit = (int)Math.rint( Math.log10( Math.abs(value) ) );
+//        int roundDigit = valueDigit - effectiveDigit + 1;
+//        double v = Math.floor( value / Math.pow( 10, roundDigit ) + 0.5 );
+//        return v * Math.pow( 10, roundDigit );
+//    }
 
 }
